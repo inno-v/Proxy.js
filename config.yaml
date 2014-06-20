@@ -1,0 +1,14 @@
+cache:
+    memory:
+        size: 52428800
+        bounds:
+            low: 0.9
+            high: 1.1
+        driver: memory
+    disk:
+        size: 52428800
+        bounds:
+            low: 0.9
+            high: 1.1
+        path: /tmp/skycomic-proxy
+        driver: disk
