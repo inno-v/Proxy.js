@@ -1,20 +1,29 @@
 proxy:
     port: 7789
+    http:
+        timeout: 5 * 1000 # proxy timeout
+        reuseConnection: true
 redis:
     host: localhost
     port: 6379
     prefix: skycomic:cache
 cache:
     memory:
-        size: 100 * 1024 * 1024
-        bounds:
+        # maximun size you expected
+        size: 200 * 1024 * 1024 # 200 MB for memory
+        bounds: 
+            # When will the proxy starts to delete old data
+            # percentage, when cachedSize > size * bounds.high 
+            # proxy will start to remove items
+            # until cachedSize <= size * bounds.low
             low: 0.9
             high: 1.1
         driver: redis
     disk:
-        size: 100 * 1024 * 1024
+        size: 20 * 1024 * 1024 * 1024 # 20G for disk
         bounds:
             low: 0.9
             high: 1.1
+        # proxy path, please make sure proxy has enough permission to create folders
         path: /tmp/skycomic-proxy
         driver: disk
