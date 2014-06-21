@@ -1,12 +1,18 @@
+proxy:
+    port: 7789
+redis:
+    host: localhost
+    port: 6379
+    prefix: skycomic:cache
 cache:
     memory:
-        size: 52428800
+        size: 100 * 1024 * 1024
         bounds:
             low: 0.9
             high: 1.1
-        driver: memory
+        driver: redis
     disk:
-        size: 52428800
+        size: 100 * 1024 * 1024
         bounds:
             low: 0.9
             high: 1.1

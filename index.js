@@ -3,7 +3,12 @@ var log4js = require('log4js')
   , crypto = require('crypto')
   , http = require('http')
   , connect = require('connect')
-  , request = require('request')
+  , request = require('request').defaults({
+            encoding: null
+          , proxy: 'http://localhost:3128'
+          , forever: true
+          , timeout: 5 * 1000 // 5 seconds
+      })
   , proxy = connect()
 
 var conf = require('./lib/config')
@@ -16,6 +21,7 @@ var md5 = function (str) {
 
 var initialPass = function (req, res, next) {
     log.info('client: ' + req.url)
+    req.startTime = new Date().valueOf();
     req.md5 = md5(req.url)
     req.cacheKeyHeader = req.md5 + ':h'
     req.cacheKeyBody = req.md5 + ':b'
@@ -27,20 +33,21 @@ var memoryHit = function (req, res, next) {
     if (req.isCacheOff) {
         return next()
     }
-    log.info('inMemory check cache: ' + req.md5)
+    log.debug('inMemory check cache: ' + req.md5)
     memLRUCache.get(req.cacheKeyHeader, function (header) {
         if (header === null) {
-            log.info('MISS')
+            log.debug('MISS')
             next()
         } else {
             header = JSON.parse(header)
-            memLRUCache.get(req.cacheKeyBody, function (body) {
+            memLRUCache.get(new Buffer(req.cacheKeyBody), function (body) {
                 if (body === null) {
-                    log.info('MISS')
+                    log.debug('MISS')
                     next()
                 } else {
-                    log.info('HIT')
+                    log.debug('HIT')
                     res.writeHead(header.statusCode, header.headers)
+                    log.info('HIT TIME: ' + (new Date().valueOf() - req.startTime))
                     res.end(body)
                 }
             });
@@ -51,12 +58,8 @@ var memoryHit = function (req, res, next) {
 var fetch = function (req, res, next) {
     log.info('fetch : ' + req.url);
     req.headers.connection = 'keep-alive'
-    var srvReq = request({
-        uri: req.url
-      , encoding: null
-      , headers: req.headers
-      , forever: true
-    }, function(error, servRes, body) {
+    var srvReq = request({uri: req.url, headers: req.headers}, function(error, servRes, body) {
+        log.info('MISS TIME: ' + (new Date().valueOf() - req.startTime))
         if (!error) {
             res.writeHead(servRes.statusCode, servRes.headers)
             res.end(body)
@@ -67,8 +70,11 @@ var fetch = function (req, res, next) {
                 }
                 res.body = body;
                 next()
+            } else {
+                log.info('statusCode error: ' + servRes.statusCode)
             }
         } else {
+            log.error('an error:' + error)
             res.end('')
         }
     })
@@ -97,4 +103,4 @@ proxy.use(initialPass)
     .use(fetch)
     .use(memoryCache)
     .use(refreshLRU)
-http.createServer(proxy).listen(7789);
+http.createServer(proxy).listen(conf.proxy.port);
