@@ -9,21 +9,21 @@ redis:
     prefix: skycomic:cache
 cache:
     memory:
+        driver: redis
         # maximun size you expected
-        size: 200 * 1024 * 1024 # 200 MB for memory
+        size: 250 * 1024 * 1024 # 200 MB for memory
+        # When will the proxy starts to delete old data
         bounds: 
-            # When will the proxy starts to delete old data
             # percentage, when cachedSize > size * bounds.high 
             # proxy will start to remove items
             # until cachedSize <= size * bounds.low
-            low: 0.9
-            high: 1.1
-        driver: redis
+            low: 0.8
+            high: 1.2
     disk:
+        driver: disk
         size: 20 * 1024 * 1024 * 1024 # 20G for disk
+        # proxy path, please make sure proxy has enough permission to create folders
+        path: /var/cache/proxy.js
         bounds:
             low: 0.9
             high: 1.1
-        # proxy path, please make sure proxy has enough permission to create folders
-        path: /tmp/skycomic-proxy
-        driver: disk

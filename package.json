@@ -23,6 +23,7 @@
     "connect": "latest",
     "log4js": "latest",
     "redis": "latest",
-    "request": "latest"
+    "request": "latest",
+	"js-yaml": "latest"
   }
 }

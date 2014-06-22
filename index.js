@@ -2,22 +2,31 @@ var conf = require('./lib/config')
   , memLRUCache = require('./lib/lruCache').driver('memory')
   , diskLRUCache = require('./lib/lruCache').driver('disk');
 
-var log4js = require('log4js')
-  , log = log4js.getLogger()
+var log = require('log4js').getLogger()
   , crypto = require('crypto')
   , http = require('http')
-  , connect = require('connect')
   , request = require('request').defaults({
             encoding: null
           , proxy: 'http://localhost:3128'
           , forever: conf.proxy.http.reuseConnection
           , timeout: eval(conf.proxy.http.timeout)
       })
+  , connect = require('connect')
   , proxy = connect();
+
+var main = function () {
+    proxy.use(initialPass)
+        .use(hitCheck('memory'))
+        .use(hitCheck('disk'))
+        .use(fetch)
+        .use(saveCache('disk'))
+        .use(saveCache('memory'))
+    http.createServer(proxy).listen(conf.proxy.port);
+};
 
 var md5 = function (str) {
     return crypto.createHash('md5').update(str).digest('hex')
-}
+};
 
 var initialPass = function (req, res, next) {
     log.info('client: ' + req.url)
@@ -28,7 +37,7 @@ var initialPass = function (req, res, next) {
     req.isCacheOff = req.headers['cache-control'] == 'no-cache'
     req.hit = false;
     next()
-}
+};
 
 var hitCheck = function (type) { // memory or disk
     return function (req, res, next) {
@@ -48,7 +57,6 @@ var hitCheck = function (type) { // memory or disk
                     if (body === null) {
                         log.debug(type + ' MISS')
                     } else {
-                        log.debug(type + ' HIT');
                         res.writeHead(header.statusCode, header.headers);
                         log.info(type + ' HIT TIME: ' + (new Date().valueOf() - req.startTime));
                         res.end(body);
@@ -58,19 +66,22 @@ var hitCheck = function (type) { // memory or disk
                         res.body = body;
                         req.hit = type;
                     }
+                    // whether miss or hit, we should go to next module
+                    // miss: fetch it
+                    // hit: save into another device (mem -> disk / disk -> mem)
                     next();
                 });
             }
         });
     };
-}
+};
 
 var fetch = function (req, res, next) {
     if (req.hit) {
-        return next();
+        return next()
     }
 
-    log.info('fetch : ' + req.url);
+    log.info('fetch : ' + req.url)
     req.headers.connection = 'keep-alive'
     var srvReq = request({uri: req.url, headers: req.headers}, function(error, servRes, body) {
         log.info('MISS TIME: ' + (new Date().valueOf() - req.startTime))
@@ -82,7 +93,7 @@ var fetch = function (req, res, next) {
                     statusCode: servRes.statusCode,
                     headers: servRes.headers
                 }
-                res.body = body;
+                res.body = body
                 next()
             } else {
                 // TODO: fail cache
@@ -94,7 +105,7 @@ var fetch = function (req, res, next) {
             res.end('')
         }
     })
-}
+};
 
 var saveCache = function (type) {
     return function (req, res, next) {
@@ -112,12 +123,4 @@ var saveCache = function (type) {
     };
 };
 
-var memoryCache = 
-
-proxy.use(initialPass)
-    .use(hitCheck('memory'))
-    .use(hitCheck('disk'))
-    .use(fetch)
-    .use(saveCache('disk'))
-    .use(saveCache('memory'))
-http.createServer(proxy).listen(conf.proxy.port);
+main();
