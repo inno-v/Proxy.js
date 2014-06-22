@@ -7,7 +7,6 @@ var log = require('log4js').getLogger()
   , http = require('http')
   , request = require('request').defaults({
             encoding: null
-          , proxy: 'http://localhost:3128'
           , forever: conf.proxy.http.reuseConnection
           , timeout: eval(conf.proxy.http.timeout)
       })
