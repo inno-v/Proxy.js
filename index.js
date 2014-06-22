@@ -53,7 +53,7 @@ var hitCheck = function (type) { // memory or disk
                         log.info(type + ' HIT TIME: ' + (new Date().valueOf() - req.startTime));
                         res.end(body);
 
-                        // for cache into another device
+                        // we need to save cache into another device
                         res.headerCache = header;
                         res.body = body;
                         req.hit = type;
@@ -85,9 +85,11 @@ var fetch = function (req, res, next) {
                 res.body = body;
                 next()
             } else {
+                // TODO: fail cache
                 log.info('statusCode error: ' + servRes.statusCode)
             }
         } else {
+            // TODO: fail cache
             log.error('an error:' + error)
             res.end('')
         }
