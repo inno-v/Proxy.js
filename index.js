@@ -51,25 +51,30 @@ var hitCheck = function (type) { // memory or disk
                 log.debug(type + ' MISS')
                 next()
             } else {
-                header = JSON.parse(header)
-                lruCache.get(new Buffer(req.cacheKeyBody), function (body) {
-                    if (body === null) {
-                        log.debug(type + ' MISS')
-                    } else {
-                        res.writeHead(header.statusCode, header.headers);
-                        log.info(type + ' HIT TIME: ' + (new Date().valueOf() - req.startTime));
-                        res.end(body);
+                try {
+                    header = JSON.parse(header);
+                    lruCache.get(new Buffer(req.cacheKeyBody), function (body) {
+                        if (body === null) {
+                            log.debug(type + ' MISS')
+                        } else {
+                            res.writeHead(header.statusCode, header.headers);
+                            log.info(type + ' HIT TIME: ' + (new Date().valueOf() - req.startTime));
+                            res.end(body);
 
-                        // we need to save cache into another device
-                        res.headerCache = header;
-                        res.body = body;
-                        req.hit = type;
-                    }
-                    // whether miss or hit, we should go to next module
-                    // miss: fetch it
-                    // hit: save into another device (mem -> disk / disk -> mem)
+                            // we need to save cache into another device
+                            res.headerCache = header;
+                            res.body = body;
+                            req.hit = type;
+                        }
+                        // whether miss or hit, we should go to next module
+                        // miss: fetch it
+                        // hit: save into another device (mem -> disk / disk -> mem)
+                        next();
+                    });
+                } catch (e) {
+                    log.error(e);
                     next();
-                });
+                }
             }
         });
     };
