@@ -29,12 +29,15 @@ var md5 = function (str) {
 
 var initialPass = function (req, res, next) {
     log.info('client: ' + req.url)
-    req.startTime = new Date().valueOf();
+    req.hit = false;
     req.md5 = md5(req.url)
+    req.startTime = new Date().valueOf();
     req.cacheKeyHeader = req.md5 + ':h'
     req.cacheKeyBody = req.md5 + ':b'
     req.isCacheOff = req.headers['cache-control'] == 'no-cache'
-    req.hit = false;
+    if (req.isCacheOff) {
+        log.info('cache: off');
+    }
     next()
 };
 
@@ -113,13 +116,15 @@ var fetch = function (req, res, next) {
 
 var saveCache = function (type) {
     return function (req, res, next) {
-        if (req.isCacheOff || req.hit == type) {
+        if (req.isCacheOff) {
             return next()
         }
-
         var lruCache = type == 'memory' ? memLRUCache : diskLRUCache;
-        lruCache.set(req.cacheKeyHeader, JSON.stringify(res.headerCache))
-        lruCache.set(req.cacheKeyBody, res.body)
+        // if in the cache, then there's no need to cache
+        if (req.hit != type) {
+            lruCache.set(req.cacheKeyHeader, JSON.stringify(res.headerCache))
+            lruCache.set(req.cacheKeyBody, res.body)
+        }
 
         lruCache.refresh(req.cacheKeyHeader, 0)
         lruCache.refresh(req.cacheKeyBody, res.body.length)
