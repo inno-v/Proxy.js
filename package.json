@@ -12,7 +12,12 @@
   },
   "keywords": [
     "proxy",
-    "forward proxy"
+    "squid",
+    "cache",
+    "forward proxy",
+    "node.js",
+    "javascript",
+    "redis"
   ],
   "author": "Ensky Lin",
   "license": "Apache",
