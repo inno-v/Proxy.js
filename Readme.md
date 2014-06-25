@@ -40,12 +40,12 @@ All configuration and comments are defined in config.yaml.default.
 Highly recommended to use [Forever](https://github.com/nodejitsu/forever) to start Proxy.js.
 
 ``` sh
-npm install -g forever
+> npm install -g forever
 
-npm install
-cp config.yaml.default config.yaml
-vim config.yaml
-forever start index.js
+> npm install
+> cp config.yaml.default config.yaml
+> vim config.yaml
+> forever start index.js
 ```
 
 ## deploy
