@@ -48,7 +48,7 @@ Highly recommended to use [Forever](https://github.com/nodejitsu/forever) to sta
 > npm install
 > cp config.yaml.default config.yaml
 > vim config.yaml
-> forever start index.js
+> forever start proxy.js
 ```
 
 ## deploy
