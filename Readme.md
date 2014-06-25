@@ -11,7 +11,7 @@ We choose Redis to store our LRU information, and to be one of our storage drive
 In some of my project, I use crawler to get HTMLs and images from other website using PHP Curl. Each script executes in different process, so I need a forward proxy(with cache and connection pool) to reduce the pressure on these websites. Firstly, I chose Squid as forward proxy and found it hard to adjust the logic of Squid. Varnish is not suitable because it's a reverse proxy. Finally I decided to write it myself using Node.js.
 
 ## Work in Progress
-This project is not ready for public use. It is still in development and currently just in the stage of development. Proxy.js doesn't follow HTTP proxy protocol and data in the proxy will not stale until it is eliminate from LRU.
+This project is not ready for public use. Proxy.js is not yet followed HTTP proxy protocol and data in the proxy will not stale until it is eliminate from LRU.
 
 ## Design
 
