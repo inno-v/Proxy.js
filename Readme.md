@@ -1,6 +1,6 @@
 # Proxy.js
 
-This is a forward standalone caching proxy (like squid, traffic server, etc.) implemented using Node.js. It is designed to be a fast, highly-customizable proxy like Varnish. Varnish is awesome but it's a reverse proxy.
+This is a forward standalone HTTP caching proxy (like squid, traffic server, etc.) implemented using Node.js. It is designed to be a fast, highly-customizable proxy like Varnish. Varnish is awesome but it's a reverse proxy.
 
 The cache elimination strategy is LRU, and the storage implementation itself is abstract, it means, rather than three drivers we provide(Memory, Redis, Disk), you can implement your own driver yourselves.
 
