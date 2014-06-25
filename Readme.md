@@ -4,7 +4,7 @@ This is a forward standalone caching proxy (like squid, traffic server, etc.) im
 
 The cache elimination strategy is LRU, and the storage implementation itself is abstract, it means, rather than three drivers we provide(Memory, Redis, Disk), you can implement your own driver yourselves.
 
-We choose Redis to store the LRU information and one of the storage driver, it's extremely fast.
+We choose Redis to store our LRU information, and to be one of our storage driver, it's extremely fast.
 
 ## Why?
 
